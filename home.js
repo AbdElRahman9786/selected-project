@@ -137,16 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ----------------------------------------------------------
      Cart button micro-interaction
   ---------------------------------------------------------- */
-  const cartBtn = document.getElementById('cart-btn');
+ const cartBtn = document.getElementById('cart-btn');
   cartBtn && cartBtn.addEventListener('click', () => {
-    const count = document.getElementById('cart-count');
-    if (count) {
-      count.style.transform = 'scale(1.5)';
-      count.style.transition = 'transform 0.2s ease';
-      setTimeout(() => {
-        count.style.transform = 'scale(1)';
-      }, 200);
-    }
+    window.location.href = 'cart.html';
   });
 
   /* ----------------------------------------------------------
@@ -206,26 +199,54 @@ document.addEventListener('DOMContentLoaded', () => {
   ---------------------------------------------------------- */
   const addCartBtns = document.querySelectorAll('.action-cart');
   const cartCount = document.getElementById('cart-count');
+  try {
+  const cart = JSON.parse(localStorage.getItem('aboss_cart') || '[]');
+  const totalQty = cart.reduce((s, i) => s + (i.qty || 1), 0);
+  if (cartCount) cartCount.textContent = totalQty;
+} catch(e) {}
 
   addCartBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (cartCount) {
-        let count = parseInt(cartCount.textContent) || 0;
-        cartCount.textContent = count + 1;
-        cartCount.style.transform = 'scale(1.6)';
-        cartCount.style.transition = 'transform 0.2s ease';
-        setTimeout(() => { cartCount.style.transform = 'scale(1)'; }, 220);
-      }
-      // Feedback text on button
-      const orig = btn.textContent;
-      btn.textContent = 'ADDED ✓';
-      btn.style.background = '#7bc040';
-      setTimeout(() => {
-        btn.textContent = orig;
-        btn.style.background = '';
-      }, 1200);
-    });
+  e.stopPropagation();
+
+  const PRODUCTS_HOME = {
+    'add-cart-1': { productId: 1, name: 'Adjustable Dumbbell',  price: 49.99,  image: 'images/product_dumbbell.png'  },
+    'add-cart-2': { productId: 2, name: 'Pro Athletic Sneaker', price: 89.99,  image: 'images/product_sneaker.png'   },
+    'add-cart-3': { productId: 3, name: 'Speed Jump Rope',      price: 19.99,  image: 'images/product_jump_rope.png' },
+    'add-cart-4': { productId: 4, name: 'Kangoo Jump Shoes',    price: 129.99, image: 'images/kangoo_shoes.png'      },
+  };
+
+  const product = PRODUCTS_HOME[btn.id];
+  if (!product) return;
+
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem('aboss_cart') || '[]'); } catch(err) {}
+
+  const existing = cart.find(i => i.productId === product.productId);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ ...product, qty: 1 });
+  }
+
+  localStorage.setItem('aboss_cart', JSON.stringify(cart));
+
+  const totalQty = cart.reduce((s, i) => s + (i.qty || 1), 0);
+  if (cartCount) {
+    cartCount.textContent = totalQty;
+    cartCount.style.transform = 'scale(1.6)';
+    cartCount.style.transition = 'transform 0.2s ease';
+    setTimeout(() => { cartCount.style.transform = 'scale(1)'; }, 220);
+  }
+
+  const orig = btn.textContent;
+  btn.textContent = 'ADDED ✓';
+  btn.style.background = '#7bc040';
+  setTimeout(() => {
+    btn.textContent = orig;
+    btn.style.background = '';
+  }, 1200);
+});
   });
 
   /* ----------------------------------------------------------
