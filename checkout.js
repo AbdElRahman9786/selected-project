@@ -60,7 +60,7 @@ function renderCheckoutSummary() {
     const navRight = document.querySelector('.nav-right');
     const navLeft  = document.querySelector('.nav-left');
 
-   if (session && navRight) {
+    if (session && navRight) {
       const chip = document.createElement('a');
       chip.href      = '#';
       chip.title     = 'Click to sign out';
@@ -68,11 +68,6 @@ function renderCheckoutSummary() {
       chip.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${session.firstname}`;
       chip.addEventListener('click', e => {
         e.preventDefault();
-        try {
-          const s = JSON.parse(localStorage.getItem('aboss_session') || 'null');
-          if (s) localStorage.setItem('aboss_cart_' + s.id, localStorage.getItem('aboss_cart') || '[]');
-          localStorage.removeItem('aboss_cart');
-        } catch(err) {}
         localStorage.removeItem('aboss_session');
         sessionStorage.removeItem('aboss_session');
         location.reload();
@@ -88,7 +83,9 @@ function renderCheckoutSummary() {
   } catch (e) {}
 })();
 
+
 document.addEventListener('DOMContentLoaded', () => {
+   
     const { getSession } = window.AuthLib;
 
     const checkoutForm = document.getElementById('checkout-form');
@@ -96,47 +93,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!checkoutForm) return;
 
     checkoutForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        const session = getSession(); 
+   
+    const session = JSON.parse(localStorage.getItem('aboss_session') || 'null'); 
 
-        if (!session) {
-            alert("You must login first to place an order!");
-            window.location.href = 'login.html'; 
-            return; 
-        }
+    if (!session) {
+        alert("You must login first to place an order!");
+        window.location.href = 'login.html';
+        return; 
+    }
 
+    const firstName = document.getElementById('billing-fname').value;
+    const lastName  = document.getElementById('billing-lname').value;
+    const address   = document.getElementById('billing-address').value;
+    const phone     = document.getElementById('billing-phone').value;
+    const totalAmount = document.getElementById('c-total').textContent;
+
+
+    if (phone.length < 11) {
+        alert("Please enter a valid 11-digit phone number.");
+        return;
+    }
+
+    const modal = document.getElementById('order-success-modal');
     
-        const firstName = document.querySelector('input[placeholder*="First Name"]')?.value || "";
-        const lastName  = document.querySelector('input[placeholder*="Last Name"]')?.value || "";
-        const address   = document.querySelector('input[placeholder*="Street Address"]')?.value || "";
-        const phone     = document.querySelector('input[placeholder*="Phone Number"]')?.value || "";
+    if (modal) {
+        document.getElementById('res-name').innerText = firstName + " " + lastName;
+        document.getElementById('res-address').innerText = address;
+        document.getElementById('res-phone').innerText = phone;
         
-        const totalElement = document.querySelector('.grand-total') || document.getElementById('check-total');
-        const total = totalElement ? totalElement.innerText : "$0.00";
+        document.getElementById('res-total').innerText = "$" + totalAmount;
 
-        if (phone.length < 11) {
-            alert("Please enter a valid 11-digit phone number.");
-            return;
-        }
+        modal.style.display = 'flex';
 
-        const modal = document.getElementById('order-success-modal');
-        
-        if (modal) {
-          
-            document.getElementById('res-name').innerText = firstName + " " + lastName;
-            document.getElementById('res-address').innerText = address;
-            document.getElementById('res-phone').innerText = phone;
-            document.getElementById('res-total').innerText = total;
-
-            modal.style.display = 'flex';
-            localStorage.removeItem('aboss_cart');
-            
-            console.log("Order placed successfully for:", session.firstname);
-        } else {
-            console.error("Success modal not found in HTML!");
-        }
-    });
+        localStorage.removeItem('aboss_cart');
+    }
 });
-
+});
 document.addEventListener('DOMContentLoaded', renderCheckoutSummary);
