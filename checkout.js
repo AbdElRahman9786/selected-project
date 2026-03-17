@@ -83,6 +83,28 @@ function renderCheckoutSummary() {
   } catch (e) {}
 })();
 
+(function initNewsletter() {
+  const form  = document.getElementById('footer-newsletter-form');
+  const input = document.getElementById('newsletter-email');
+  const fb    = document.getElementById('newsletter-feedback');
+
+  if (!form) return;
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const email = input.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fb.textContent = 'Please enter a valid email.';
+      fb.className   = 'newsletter-feedback error';
+      return;
+    }
+    fb.textContent = "✓ You're subscribed! Welcome to the crew.";
+    fb.className   = 'newsletter-feedback success';
+    input.value    = '';
+    setTimeout(() => { fb.textContent = ''; fb.className = 'newsletter-feedback'; }, 4000);
+  });
+})();
+
 
 document.addEventListener('DOMContentLoaded', () => {
    
