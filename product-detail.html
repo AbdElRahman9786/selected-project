@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Detail – Aboss</title>
+  <meta name="description" content="View product details and add to cart at Aboss Fitness Store." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="product-detail.css" />
+</head>
+<body>
+
+  <!-- ===== NAVBAR (identical to index.html) ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-left">
+      <a href="index.html"             class="nav-link">HOME <span class="arrow">&#8964;</span></a>
+      <a href="product-listing.html"   class="nav-link">WOMEN <span class="arrow">&#8964;</span></a>
+      <a href="product-listing.html"   class="nav-link">MEN <span class="arrow">&#8964;</span></a>
+      <a href="#"                      class="nav-link">BLOG <span class="arrow">&#8964;</span></a>
+      <a href="#"                      class="nav-link">PAGES <span class="arrow">&#8964;</span></a>
+      <a href="product-listing.html"   class="nav-link active">SHOP <span class="arrow">&#8964;</span></a>
+    </div>
+
+    <div class="nav-brand">
+      <a href="index.html" id="brand-logo">aboss<span class="dot">.</span></a>
+    </div>
+
+    <div class="nav-right">
+      <button class="icon-btn" id="wishlist-btn" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      <button class="icon-btn" id="search-btn" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="icon-btn cart-btn" id="cart-btn" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-count" id="cart-count">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== BREADCRUMB ===== -->
+  <div class="pd-breadcrumb">
+    <a href="index.html">Home</a>
+    <span class="sep">›</span>
+    <a href="product-listing.html">Shop</a>
+    <span class="sep">›</span>
+    <span id="breadcrumb-name">Product</span>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="pd-main" id="pd-main">
+
+    <!-- ===== NOT FOUND STATE ===== -->
+    <div class="pd-not-found" id="pd-not-found" style="display:none;">
+      <div class="pd-not-found-icon">🔍</div>
+      <h2>Product Not Found</h2>
+      <p>The product you're looking for doesn't exist or may have been removed.</p>
+      <a href="product-listing.html" class="pd-back-btn">← Browse All Products</a>
+    </div>
+
+    <!-- ===== PRODUCT DETAIL LAYOUT ===== -->
+    <div class="pd-layout" id="pd-layout" style="display:none;">
+
+      <!-- LEFT: Image Gallery -->
+      <div class="pd-gallery">
+        <!-- Thumbnails (vertical strip) -->
+        <div class="pd-thumbs" id="pd-thumbs">
+          <!-- Injected by JS -->
+        </div>
+
+        <!-- Main image display -->
+        <div class="pd-main-img-wrap">
+          <!-- Badge overlay -->
+          <div class="pd-img-badges" id="pd-img-badges"></div>
+
+          <!-- Wishlist heart -->
+          <button class="pd-wishlist-btn" id="pd-wishlist-btn" aria-label="Add to wishlist" title="Add to wishlist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+
+          <!-- The main product image -->
+          <img src="" alt="" class="pd-main-img" id="pd-main-img" />
+
+          <!-- Placeholder for products without images -->
+          <div class="pd-img-placeholder" id="pd-img-placeholder" style="display:none;">
+            <div class="placeholder-icon">🏋️</div>
+            <p>Image coming soon</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Product Info -->
+      <div class="pd-info">
+
+        <!-- Category label -->
+        <p class="pd-category" id="pd-category">Equipment</p>
+
+        <!-- Product name -->
+        <h1 class="pd-name" id="pd-name">Product Name</h1>
+
+        <!-- Rating row -->
+        <div class="pd-rating-row" id="pd-rating-row">
+          <span class="pd-stars" id="pd-stars">★★★★★</span>
+          <span class="pd-review-count" id="pd-review-count">(0 reviews)</span>
+          <span class="pd-in-stock" id="pd-in-stock">In Stock</span>
+        </div>
+
+        <!-- Price row -->
+        <div class="pd-price-row">
+          <span class="pd-price" id="pd-price">$0.00</span>
+          <span class="pd-price-old" id="pd-price-old"></span>
+          <span class="pd-discount-badge" id="pd-discount-badge"></span>
+        </div>
+
+        <!-- Divider -->
+        <hr class="pd-divider" />
+
+        <!-- Description -->
+        <p class="pd-description" id="pd-description">Product description goes here.</p>
+
+        <!-- Sizes selector (only shown if product has sizes) -->
+        <div class="pd-sizes-wrap" id="pd-sizes-wrap" style="display:none;">
+          <div class="pd-option-label">
+            Size: <span class="pd-selected-size" id="pd-selected-size">—</span>
+          </div>
+          <div class="pd-sizes" id="pd-sizes">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Colors selector (only shown if product has colors) -->
+        <div class="pd-colors-wrap" id="pd-colors-wrap" style="display:none;">
+          <div class="pd-option-label">
+            Color: <span class="pd-selected-color-name" id="pd-selected-color-name">—</span>
+          </div>
+          <div class="pd-colors" id="pd-colors">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Quantity + Add to Cart row -->
+        <div class="pd-actions-row">
+          <!-- Quantity stepper -->
+          <div class="pd-qty-wrap">
+            <button class="pd-qty-btn" id="pd-qty-minus" aria-label="Decrease quantity">−</button>
+            <span class="pd-qty-num" id="pd-qty-num">1</span>
+            <button class="pd-qty-btn" id="pd-qty-plus" aria-label="Increase quantity">+</button>
+          </div>
+
+          <!-- Add To Cart button -->
+          <button class="pd-add-cart-btn" id="pd-add-cart-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            ADD TO CART
+          </button>
+
+          <!-- Buy Now button -->
+          <button class="pd-buy-now-btn" id="pd-buy-now-btn">BUY NOW</button>
+        </div>
+
+        <!-- Trust badges -->
+        <div class="pd-trust-badges">
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Free returns
+          </div>
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Fast shipping
+          </div>
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Secure checkout
+          </div>
+        </div>
+
+        <!-- Share row -->
+        <div class="pd-share-row">
+          <span class="pd-share-label">Share:</span>
+          <a href="#" class="pd-share-icon" aria-label="Share on Facebook" title="Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="#" class="pd-share-icon" aria-label="Share on Twitter" title="Twitter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 4l16 16M20 4L4 20" stroke-linecap="round"/></svg>
+          </a>
+          <a href="#" class="pd-share-icon" aria-label="Share on Instagram" title="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+        </div>
+
+      </div><!-- /.pd-info -->
+    </div><!-- /.pd-layout -->
+
+    <!-- ===== RELATED PRODUCTS ===== -->
+    <section class="pd-related" id="pd-related" style="display:none;">
+      <h2 class="pd-related-title">You May Also Like</h2>
+      <div class="pd-related-grid" id="pd-related-grid">
+        <!-- Injected by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== TOAST ===== -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ===== FOOTER (identical to index.html) ===== -->
+  <footer class="footer" id="footer">
+    <div class="footer-top">
+
+      <div class="footer-col footer-brand-col">
+        <a href="index.html" class="footer-logo" id="footer-logo">aboss<span>.</span></a>
+        <p class="footer-tagline">Gear up. Push harder.<br>Live stronger.</p>
+        <div class="footer-socials" id="footer-socials">
+          <a href="#" class="social-icon" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="#" class="social-icon" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="#" class="social-icon" aria-label="Twitter/X">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </a>
+          <a href="#" class="social-icon" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#fff"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Shop</h4>
+        <ul class="footer-links">
+          <li><a href="product-listing.html">Women</a></li>
+          <li><a href="product-listing.html">Men</a></li>
+          <li><a href="product-listing.html">Equipment</a></li>
+          <li><a href="product-listing.html">Shoes</a></li>
+          <li><a href="product-listing.html">New Arrivals</a></li>
+          <li><a href="product-listing.html">Sale</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Account</h4>
+        <ul class="footer-links">
+          <li><a href="login.html">Login</a></li>
+          <li><a href="register.html">Register</a></li>
+          <li><a href="cart.html">My Cart</a></li>
+          <li><a href="checkout.html">Checkout</a></li>
+          <li><a href="#">Order History</a></li>
+          <li><a href="#">Wishlist</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Info</h4>
+        <ul class="footer-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Shipping Policy</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-newsletter-col">
+        <h4 class="footer-heading">Stay in the Loop</h4>
+        <p class="footer-newsletter-desc">Get exclusive deals, workout tips &amp; new arrivals straight to your inbox.</p>
+        <form class="footer-newsletter-form" id="footer-newsletter-form" novalidate>
+          <input type="email" id="newsletter-email" class="newsletter-input" placeholder="your@email.com" required />
+          <button type="submit" class="newsletter-btn" id="newsletter-submit">Subscribe</button>
+        </form>
+        <p class="newsletter-feedback" id="newsletter-feedback"></p>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">&copy; 2026 <strong>Aboss</strong>. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Load product-detail logic -->
+  <script src="product-detail.js"></script>
+
+</body>
+</html>
