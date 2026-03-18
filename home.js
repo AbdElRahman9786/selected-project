@@ -358,13 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
      userChip.addEventListener('click', (e) => {
   e.preventDefault();
-  
+
   try {
     const s = JSON.parse(localStorage.getItem('aboss_session') || 'null');
     if (s) localStorage.setItem('aboss_cart_' + s.id, localStorage.getItem('aboss_cart') || '[]');
     localStorage.removeItem('aboss_cart');
   } catch(e) {}
-  
+
   localStorage.removeItem('aboss_session');
   sessionStorage.removeItem('aboss_session');
   window.location.reload();
@@ -379,5 +379,69 @@ document.addEventListener('DOMContentLoaded', () => {
       navLeft.appendChild(loginLink);
     }
   } catch (e) { /* silently ignore */ }
+
+  /* ----------------------------------------------------------
+     Search overlay functionality
+  ---------------------------------------------------------- */
+  const searchBtn = document.getElementById('search-btn');
+  const searchOverlay = document.getElementById('search-overlay');
+  const searchClose = document.getElementById('search-close');
+  const searchInput = document.getElementById('search-input');
+  const searchClear = document.getElementById('search-clear');
+
+  // Open search overlay
+  searchBtn && searchBtn.addEventListener('click', () => {
+    searchOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => searchInput.focus(), 100);
+  });
+
+  // Close search overlay
+  const closeSearch = () => {
+    searchOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  searchClose && searchClose.addEventListener('click', closeSearch);
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && searchOverlay.classList.contains('open')) {
+      closeSearch();
+    }
+  });
+
+  // Close on overlay click (outside search box)
+  searchOverlay && searchOverlay.addEventListener('click', (e) => {
+    if (e.target === searchOverlay) {
+      closeSearch();
+    }
+  });
+
+  // Show/hide clear button
+  searchInput && searchInput.addEventListener('input', () => {
+    const val = searchInput.value.trim();
+    if (searchClear) {
+      searchClear.style.display = val ? 'block' : 'none';
+    }
+  });
+
+  // Clear search input
+  searchClear && searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+    searchInput.focus();
+  });
+
+  // Handle search submission (Enter key)
+  searchInput && searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const searchTerm = searchInput.value.trim();
+      if (searchTerm) {
+        // Redirect to product listing page with search query
+        window.location.href = `product-listing.html?search=${encodeURIComponent(searchTerm)}`;
+      }
+    }
+  });
 
 });

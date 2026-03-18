@@ -384,11 +384,12 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCartBadge();
   updateCategoryCounts();
   bindEvents();
-  applyFiltersAndRender();
   initPriceRange();
   initAuthNavbar();
   initNewsletter();
   initFilterSectionToggles();
+  initSearchFromURL();
+  applyFiltersAndRender();
 });
 
 /* ----------------------------------------------------------
@@ -1149,4 +1150,18 @@ function initNewsletter() {
     input.value = '';
     setTimeout(() => { fb.textContent = ''; fb.className = 'newsletter-feedback'; }, 4000);
   });
+}
+
+/* ----------------------------------------------------------
+   INIT SEARCH FROM URL
+   ---------------------------------------------------------- */
+function initSearchFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQuery = urlParams.get('search');
+
+  if (searchQuery) {
+    state.search = searchQuery.toLowerCase();
+    searchInput.value = searchQuery;
+    searchClear.style.display = 'block';
+  }
 }
