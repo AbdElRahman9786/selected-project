@@ -185,6 +185,9 @@ function loginUser({ email, password }) {
 function saveSession(user, remember) {
   const storage = remember ? localStorage : sessionStorage;
   storage.setItem('aboss_session', JSON.stringify(user));
+  
+  const userCart = localStorage.getItem('aboss_cart_' + user.id) || '[]';
+  localStorage.setItem('aboss_cart', userCart);
 }
 
 function getSession() {

@@ -55,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (result.success) {
         saveSession(result.user, rememberCb?.checked);
+        const userCart = localStorage.getItem('aboss_cart_' + result.user.id) || '[]';
+localStorage.setItem('aboss_cart', userCart);
         showAlert(alertEl, `✓ ${result.message} Redirecting…`, 'success');
         setTimeout(() => { window.location.href = 'index.html'; }, 1100);
       } else {
