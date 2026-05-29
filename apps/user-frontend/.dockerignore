@@ -1,0 +1,6 @@
+backend/
+admin-frontend/
+mysql-init/
+docker-compose.yml
+.git/
+.dockerignore

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p>Welcome to the administration panel.</p>
+    
+    <h2>Backend Status:</h2>
+    <div id="status">Checking...</div>
+
+    <script>
+        fetch('http://localhost:5000/api/health')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('status').innerHTML = 
+                    `<span class="success">Connected! Database Status: ${data.database}</span>`;
+            })
+            .catch(err => {
+                document.getElementById('status').innerHTML = 
+                    `<span class="error">Not connected to backend.</span>`;
+            });
+    </script>
+</body>
+</html>
