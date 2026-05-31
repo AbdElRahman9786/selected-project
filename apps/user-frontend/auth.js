@@ -97,7 +97,7 @@ function hashPassword(pw) {
   let hash = 5381;
   for (let i = 0; i < pw.length; i++) {
     hash = ((hash << 5) + hash) ^ pw.charCodeAt(i);
-    hash = hash >>> 0; // keep unsigned 32-bit
+    hash = hash >>> 0;
   }
   return 'h_' + hash.toString(16) + '_aboss';
 }
@@ -125,7 +125,6 @@ function generateId() {
    Register logic
 ───────────────────────────────────────────────────────── */
 function registerUser({ firstname, lastname, email, phone, password }) {
-  // Validate
   if (!firstname || !lastname || !email || !password)
     return { success: false, message: 'All required fields must be filled.' };
 
@@ -171,7 +170,6 @@ function loginUser({ email, password }) {
   if (!user || user.password !== hashPassword(password))
     return { success: false, message: 'Invalid email or password.' };
 
-  // Update last login
   user.lastLogin = new Date().toISOString();
   writeUsers(users);
 
@@ -180,12 +178,11 @@ function loginUser({ email, password }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Session helpers (sessionStorage = tab-only, localStorage = remember me)
+   Session helpers — always saves to BOTH storages
 ───────────────────────────────────────────────────────── */
 function saveSession(user, remember) {
-  const storage = remember ? localStorage : sessionStorage;
-  storage.setItem('aboss_session', JSON.stringify(user));
-  
+  localStorage.setItem('aboss_session', JSON.stringify(user));
+  sessionStorage.setItem('aboss_session', JSON.stringify(user));
   const userCart = localStorage.getItem('aboss_cart_' + user.id) || '[]';
   localStorage.setItem('aboss_cart', userCart);
 }
@@ -209,7 +206,7 @@ function clearSession() {
    Export users as JSON file (download)
 ───────────────────────────────────────────────────────── */
 function exportUsersJSON() {
-  const users = readUsers().map(({ password: _, ...u }) => u); // strip passwords
+  const users = readUsers().map(({ password: _, ...u }) => u);
   const blob  = new Blob([JSON.stringify(users, null, 2)], { type: 'application/json' });
   const url   = URL.createObjectURL(blob);
   const a     = document.createElement('a');

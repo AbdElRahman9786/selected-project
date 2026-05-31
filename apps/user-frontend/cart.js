@@ -1,29 +1,10 @@
-
-const PRODUCTS_DB = [
-  { id: 1,  name: 'Adjustable Dumbbell Set', price: 49.99,  oldPrice: 69.99,  image: 'images/product_dumbbell.png',                    category: 'Equipment' },
-  { id: 2,  name: 'Pro Athletic Sneaker',    price: 89.99,  oldPrice: null,   image: 'images/product_sneaker.png',                     category: 'Shoes'     },
-  { id: 3,  name: 'Speed Jump Rope',         price: 19.99,  oldPrice: null,   image: 'images/product_jump_rope.png',                   category: 'Equipment' },
-  { id: 4,  name: 'Kangoo Jump Shoes',       price: 129.99, oldPrice: 159.99, image: 'images/kangoo_shoes.png',                        category: 'Shoes'     },
-  { id: 5,  name: 'Resistance Band Kit',     price: 34.99,  oldPrice: null,   image: 'images/Resistance Band Kit.jpeg',                category: 'Equipment' },
-  { id: 6,  name: "Men's Training Tee",      price: 29.99,  oldPrice: 39.99,  image: 'images/training_shirt.jpeg',                     category: 'Men'       },
-  { id: 7,  name: 'Boxing Gloves Pro',       price: 54.99,  oldPrice: 69.99,  image: 'images/Boxing_gloves1.jpeg',                     category: 'Equipment' },
-  { id: 8,  name: 'Foam Roller Pro',         price: 24.99,  oldPrice: null,   image: 'images/Foam Roller Pro.jpg',                     category: 'Equipment' },
-  { id: 9,  name: "Men's Running Shorts",    price: 39.99,  oldPrice: 49.99,  image: 'images/men_short.webp',                          category: 'Men'       },
-  { id: 10, name: "Women's Leggings",        price: 64.99,  oldPrice: 79.99,  image: 'images/women_leggings.jpeg',                     category: 'Women'     },
-  { id: 11, name: 'Pull-Up Bar',             price: 59.99,  oldPrice: null,   image: 'images/weight-training-door-pull-up-bar.avif',   category: 'Equipment' },
-  { id: 12, name: 'Yoga Mat Premium',        price: 49.99,  oldPrice: null,   image: 'images/yoga_mat.jpeg',                           category: 'Equipment' },
-];
-
+const API = 'http://localhost:5000';
 
 const FREE_SHIPPING_THRESHOLD = 150;
 const TAX_RATE                = 0.14;
-const VALID_COUPON            = { code: 'ABOSS10', pct: 10 };
 
-
-let cart = JSON.parse(localStorage.getItem('aboss_cart') || 'null');
-
-if (!cart) cart = [];
-
+let cart = JSON.parse(localStorage.getItem('aboss_cart') || '[]');
+if (!Array.isArray(cart)) cart = [];
 
 let couponApplied = false;
 let discountPct   = 0;
@@ -64,8 +45,7 @@ function renderItems() {
 
   cart.forEach((item, idx) => {
     const lineTotal = item.price * item.qty;
-    const product   = PRODUCTS_DB.find(p => p.id === item.productId) || {};
-    const hasOld    = !!product.oldPrice;
+    const hasOld    = !!item.oldPrice;
 
     const row = document.createElement('div');
     row.className   = 'cart-item';
@@ -75,18 +55,19 @@ function renderItems() {
       <div class="item-info">
         <div class="item-img-wrap">
           <img src="${item.image}" alt="${item.name}" class="item-img" onerror="this.style.opacity=0.3" />
-          <span class="item-color-dot" style="background:${product.color || '#aaa'}"></span>
+          <span class="item-color-dot" style="background:${item.color || '#aaa'}"></span>
         </div>
         <div class="item-details">
           <div class="item-name">${item.name}</div>
           <div class="item-meta">
-            <span class="item-meta-tag">${product.size || ''}</span>
-            <span>${product.category || ''}</span>
+            ${item.size  ? `<span class="item-meta-tag">${item.size}</span>`  : ''}
+            ${item.color ? `<span class="item-meta-tag">${item.color}</span>` : ''}
+            <span>${item.category || ''}</span>
           </div>
         </div>
       </div>
       <div class="item-price">
-        ${hasOld ? `<span class="item-price-old">$${product.oldPrice.toFixed(2)}</span>` : ''}
+        ${hasOld ? `<span class="item-price-old">$${item.oldPrice.toFixed(2)}</span>` : ''}
         $${item.price.toFixed(2)}
       </div>
       <div class="qty-stepper">
@@ -171,8 +152,8 @@ function renderSummary() {
   document.getElementById('s-tax').textContent      = `$${tax.toFixed(2)}`;
   document.getElementById('s-total').textContent    = total.toFixed(2);
 
-  const shippingEl      = document.getElementById('s-shipping');
-  shippingEl.textContent = shipping === 0 ? 'FREE ' : `$${shipping.toFixed(2)}`;
+  const shippingEl       = document.getElementById('s-shipping');
+  shippingEl.textContent = shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`;
   shippingEl.className   = 'summary-value' + (shipping === 0 ? ' free' : '');
 
   const discountRow = document.getElementById('s-discount-row');
@@ -200,25 +181,49 @@ function renderSummary() {
 }
 
 
-document.getElementById('coupon-apply').addEventListener('click', () => {
+// ── Coupon ────────────────────────────────────────────────
+document.getElementById('coupon-apply').addEventListener('click', async () => {
   const val      = document.getElementById('coupon-input').value.trim().toUpperCase();
   const feedback = document.getElementById('coupon-feedback');
 
-  if (val === VALID_COUPON.code) {
-    couponApplied = true;
-    discountPct   = VALID_COUPON.pct;
-    feedback.textContent = `✓ ${VALID_COUPON.pct}% off applied!`;
-    feedback.className   = 'coupon-feedback ok';
-    renderSummary();
-    showToast('Coupon applied! ');
-  } else {
-    feedback.textContent = 'Invalid coupon code.';
-    feedback.className   = 'coupon-feedback err';
+  try {
+    const res  = await fetch(`${API}/api/validate-coupon`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ code: val })
+    });
+    const data = await res.json();
+
+    if (data.valid) {
+      couponApplied = true;
+      discountPct   = data.discount_pct;
+      feedback.textContent = `✓ ${data.discount_pct}% off applied!`;
+      feedback.className   = 'coupon-feedback ok';
+      renderSummary();
+      showToast('Coupon applied!');
+    } else {
+      feedback.textContent = 'Invalid coupon code.';
+      feedback.className   = 'coupon-feedback err';
+    }
+  } catch {
+    
+    if (val === 'ABOSS10') {
+      couponApplied = true;
+      discountPct   = 10;
+      feedback.textContent = '✓ 10% off applied!';
+      feedback.className   = 'coupon-feedback ok';
+      renderSummary();
+      showToast('Coupon applied!');
+    } else {
+      feedback.textContent = 'Invalid coupon code.';
+      feedback.className   = 'coupon-feedback err';
+    }
   }
   setTimeout(() => { feedback.textContent = ''; feedback.className = 'coupon-feedback'; }, 3500);
 });
 
 
+// ── Auth Navbar ───────────────────────────────────────────
 (function initAuthNavbar() {
   try {
     const session = JSON.parse(
@@ -229,7 +234,7 @@ document.getElementById('coupon-apply').addEventListener('click', () => {
     const navRight = document.querySelector('.nav-right');
     const navLeft  = document.querySelector('.nav-left');
 
-   if (session && navRight) {
+    if (session && navRight) {
       const chip = document.createElement('a');
       chip.href      = '#';
       chip.title     = 'Click to sign out';
@@ -247,11 +252,10 @@ document.getElementById('coupon-apply').addEventListener('click', () => {
         location.reload();
       });
       navRight.prepend(chip);
-    }
-    else if (!session && navLeft) {
+    } else if (!session && navLeft) {
       const loginLink = document.createElement('a');
-      loginLink.href       = 'login.html';
-      loginLink.className  = 'nav-link';
+      loginLink.href        = 'login.html';
+      loginLink.className   = 'nav-link';
       loginLink.textContent = 'LOGIN';
       navLeft.appendChild(loginLink);
     }
@@ -259,6 +263,7 @@ document.getElementById('coupon-apply').addEventListener('click', () => {
 })();
 
 
+// ── Newsletter ────────────────────────────────────────────
 (function initNewsletter() {
   const form  = document.getElementById('footer-newsletter-form');
   const input = document.getElementById('newsletter-email');
@@ -266,7 +271,7 @@ document.getElementById('coupon-apply').addEventListener('click', () => {
 
   if (!form) return;
 
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const email = input.value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -274,21 +279,29 @@ document.getElementById('coupon-apply').addEventListener('click', () => {
       fb.className   = 'newsletter-feedback error';
       return;
     }
-    fb.textContent = "✓ You're subscribed! Welcome to the crew.";
-    fb.className   = 'newsletter-feedback success';
-    input.value    = '';
+    try {
+      const res  = await fetch(`${API}/api/newsletter`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email })
+      });
+      const data = await res.json();
+      fb.textContent = res.ok ? "✓ You're subscribed! Welcome to the crew." : data.error;
+      fb.className   = res.ok ? 'newsletter-feedback success' : 'newsletter-feedback error';
+    } catch {
+      fb.textContent = "✓ You're subscribed! Welcome to the crew.";
+      fb.className   = 'newsletter-feedback success';
+    }
+    input.value = '';
     setTimeout(() => { fb.textContent = ''; fb.className = 'newsletter-feedback'; }, 4000);
   });
 })();
 
 
 document.addEventListener('DOMContentLoaded', () => {
-
   renderItems();
-
   setTimeout(() => {
     const progress = Math.min((subtotal() / FREE_SHIPPING_THRESHOLD) * 100, 100);
     document.getElementById('shipping-fill').style.width = progress + '%';
   }, 600);
-
 });

@@ -2,8 +2,23 @@
    ABOSS – home.js
    Hero Section Interactivity
    ============================================================ */
+const API = 'http://localhost:5000';
+let homeProducts = {};
 
-document.addEventListener('DOMContentLoaded', () => {
+async function loadFeaturedProducts() {
+  try {
+    const res  = await fetch(`${API}/api/products?sort=featured`);
+    const data = await res.json();
+    const products = data.products || [];
+    products.forEach(p => {
+      homeProducts[p.id] = p;
+    });
+  } catch(e) {
+    console.error('Failed to load products:', e);
+  }
+}
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadFeaturedProducts();
 
   /* ----------------------------------------------------------
      Nav link active state
@@ -209,29 +224,33 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', (e) => {
   e.stopPropagation();
 
-  const PRODUCTS_HOME = {
-    'add-cart-1': { productId: 1, name: 'Adjustable Dumbbell',  price: 49.99,  image: 'images/product_dumbbell.png'  },
-    'add-cart-2': { productId: 2, name: 'Pro Athletic Sneaker', price: 89.99,  image: 'images/product_sneaker.png'   },
-    'add-cart-3': { productId: 3, name: 'Speed Jump Rope',      price: 19.99,  image: 'images/product_jump_rope.png' },
-    'add-cart-4': { productId: 4, name: 'Kangoo Jump Shoes',    price: 129.99, image: 'images/kangoo_shoes.png'      },
-  };
-
-  const product = PRODUCTS_HOME[btn.id];
+  const btnToId = { 'add-cart-1': 1, 'add-cart-2': 2, 'add-cart-3': 3, 'add-cart-4': 4 };
+  const product = homeProducts[btnToId[btn.id]];
   if (!product) return;
 
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem('aboss_cart') || '[]'); } catch(err) {}
 
-  const existing = cart.find(i => i.productId === product.productId);
+  const existing = cart.find(i => i.productId === product.id);
   if (existing) {
     existing.qty++;
   } else {
-    cart.push({ ...product, qty: 1 });
+    cart.push({ productId: product.id, name: product.name, price: product.price, image: product.image, qty: 1 });
   }
 
   localStorage.setItem('aboss_cart', JSON.stringify(cart));
 
-  const totalQty = cart.reduce((s, i) => s + (i.qty || 1), 0);
+fetch(`${API}/api/cart`, {
+  method:  'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body:    JSON.stringify({
+    session_id: localStorage.getItem('aboss_session_id') || 'guest',
+    product_id: product.id,
+    quantity:   1,
+  })
+}).catch(e => console.error('Cart API error:', e));
+
+const totalQty = cart.reduce((s, i) => s + (i.qty || 1), 0);
   if (cartCount) {
     cartCount.textContent = totalQty;
     cartCount.style.transform = 'scale(1.6)';
@@ -271,24 +290,30 @@ document.addEventListener('DOMContentLoaded', () => {
   ---------------------------------------------------------- */
  document.querySelectorAll('.promo-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
-      const PROMO_PRODUCTS = {
-        'promo-btn-1': { productId: 4, name: 'Kangoo Jump Shoes',   price: 129.99, image: 'images/kangoo_shoes.png'     },
-        'promo-btn-2': { productId: 1, name: 'Adjustable Dumbbell', price: 49.99,  image: 'images/product_dumbbell.png' },
-      };
-
-      const product = PROMO_PRODUCTS[btn.id];
+      const promoToId = { 'promo-btn-1': 4, 'promo-btn-2': 1 };
+      const product = homeProducts[promoToId[btn.id]];
       if (product) {
         let cart = [];
         try { cart = JSON.parse(localStorage.getItem('aboss_cart') || '[]'); } catch(err) {}
 
-        const existing = cart.find(i => i.productId === product.productId);
+        const existing = cart.find(i => i.productId === product.id);
         if (existing) {
           existing.qty++;
         } else {
-          cart.push({ ...product, qty: 1 });
+          cart.push({ productId: product.id, name: product.name, price: product.price, image: product.image, qty: 1 });
         }
 
-        localStorage.setItem('aboss_cart', JSON.stringify(cart));
+       localStorage.setItem('aboss_cart', JSON.stringify(cart));
+
+        fetch(`${API}/api/cart`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({
+            session_id: localStorage.getItem('aboss_session_id') || 'guest',
+            product_id: product.id,
+            quantity:   1,
+          })
+        }).catch(e => console.error('Cart API error:', e));
 
         const totalQty = cart.reduce((s, i) => s + (i.qty || 1), 0);
         if (cartCount) {
@@ -439,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const searchTerm = searchInput.value.trim();
       if (searchTerm) {
         // Redirect to product listing page with search query
-        window.location.href = `product-listing.html?search=${encodeURIComponent(searchTerm)}`;
+       window.location.href = `product-listing.html?q=${encodeURIComponent(searchTerm)}`;
       }
     }
   });
