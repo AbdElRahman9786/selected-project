@@ -9,11 +9,15 @@ This project has been containerized and includes 3 main applications and a MySQL
    ```bash
    docker-compose up -d --build
    ```
-3. Once the containers are built and started, you can access the applications in your browser:
-   * **User Frontend:** [http://localhost:8080](http://localhost:8080)
+Once the containers are built and started, you can access the applications in your browser:
+   * **User Frontend:** [http://localhost:8082](http://localhost:8082) (default; port 8080 is often in use on Windows)
    * **Admin Frontend:** [http://localhost:8081](http://localhost:8081)
+   admin email: admin@example.com
+   password: Admin123!
    * **Flask Backend (Health Check & Endpoints):** [http://localhost:5000/](http://localhost:5000/)
-   * **MySQL Database:** Running on port `3306`
+   * **MySQL Database:** internal to Docker network only (not published to the host)
+
+To use host port 8080 for the user frontend instead, set `USER_FRONTEND_PORT=8080` in `.env` or your shell before `docker compose up`.
 
 To shut down the containers, run:
 ```bash
