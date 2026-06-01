@@ -15,7 +15,7 @@ Once the containers are built and started, you can access the applications in yo
    admin email: admin@example.com
    password: Admin123!
    * **Flask Backend (Health Check & Endpoints):** [http://localhost:5000/](http://localhost:5000/)
-   * **MySQL Database:** internal to Docker network only (not published to the host)
+   * **MySQL Database:** localhost:3307
 
 To use host port 8080 for the user frontend instead, set `USER_FRONTEND_PORT=8080` in `.env` or your shell before `docker compose up`.
 
