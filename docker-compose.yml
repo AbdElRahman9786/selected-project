@@ -1,8 +1,11 @@
 services:
   db:
+  
     build:
       context: ./mysql-init
       dockerfile: Dockerfile
+    ports:
+    - "3307:3306"
     image: selected-project-db
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
