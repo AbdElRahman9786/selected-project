@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   passwordIn.addEventListener('blur', () => {
     setFieldState(passwordIn, document.getElementById('err-login-password'), passwordIn.value ? '' : 'Password is required.');
   });
-
+  
   /* Form submit */
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -47,25 +47,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!valid) return;
 
-    // Simulate brief loading for UX
+    // تشغيل الأنيميشن الخاص بالتحميل
     setLoading(submitBtn, loaderEl, true);
-    setTimeout(() => {
-      const result = loginUser({ email, password });
+
+    // ضرب الـ API الحقيقي في الباك إند
+    fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    })
+    .then(response => response.json().then(data => ({ status: response.status, data })))
+    .then(({ status, data }) => {
       setLoading(submitBtn, loaderEl, false);
 
-      if (result.success) {
-        saveSession(result.user, rememberCb?.checked);
-        const userCart = localStorage.getItem('aboss_cart_' + result.user.id) || '[]';
-localStorage.setItem('aboss_cart', userCart);
-        showAlert(alertEl, `✓ ${result.message} Redirecting…`, 'success');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1100);
+      if (status === 200) {
+  localStorage.setItem('aboss_token', data.token);
+
+  // فك الـ JWT وجيب البيانات منه مباشرةً
+  let tokenPayload = {};
+  try {
+    tokenPayload = JSON.parse(atob(data.token.split('.')[1]));
+  } catch(e) {}
+
+  const sessionUser = {
+    id:         tokenPayload.id         || tokenPayload.sub  || '',
+    firstname:  tokenPayload.first_name || tokenPayload.firstname || '',
+    first_name: tokenPayload.first_name || tokenPayload.firstname || '',
+    lastname:   tokenPayload.last_name  || tokenPayload.lastname  || '',
+    last_name:  tokenPayload.last_name  || tokenPayload.lastname  || '',
+    email:      tokenPayload.email      || '',
+    role:       tokenPayload.role       || 'customer',
+  };
+
+  localStorage.setItem('aboss_session', JSON.stringify(sessionUser));
+  sessionStorage.setItem('aboss_session', JSON.stringify(sessionUser));
+  localStorage.setItem('token', data.token);
+
+        // ربط السلة الخاصة بالمستخدم الحالي
+        const userCart = localStorage.getItem('aboss_cart_' + data.user.id) || '[]';
+        localStorage.setItem('aboss_cart', userCart);
+
+        showAlert(alertEl, `✓ ${data.message} Redirecting…`, 'success');
+
+        // التوجيه بناءً على صلاحية المستخدم (Admin أو Customer)
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            // توجيه الآدمن إلى الفرونت إند الخاص به (البورت 8081 حسب الـ README)
+            window.location.href = 'http://localhost:8081'; 
+          } else {
+            // توجيه المستخدم العادي إلى الصفحة الرئيسية للمتجر
+            window.location.href = 'index.html';
+          }
+        }, 1100);
       } else {
-        showAlert(alertEl, result.message, 'error');
+        // عرض الخطأ الراجع من السيرفر (مثلاً: إيميل أو باسوورد خطأ)
+        showAlert(alertEl, data.error || 'Invalid email or password.', 'error');
         emailIn.classList.add('invalid');
         passwordIn.classList.add('invalid');
       }
-    }, 500);
+    })
+    .catch(error => {
+      setLoading(submitBtn, loaderEl, false);
+      console.error('Error during login:', error);
+      showAlert(alertEl, '⚠️ Unable to connect to the server. Please ensure Docker containers are running.', 'error');
+    });
   });
+  
 
   /* Social auth placeholders */
   document.getElementById('google-login')?.addEventListener('click', () => {

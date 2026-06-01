@@ -4,6 +4,7 @@ import time
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+from auth import auth_bp
 
 from bootstrap import ensure_admin_user
 from db import get_db_connection
@@ -16,6 +17,7 @@ app = Flask(__name__)
 CORS(app)
 app.register_blueprint(store_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(auth_bp)
 
 
 def _wait_for_database(retries=30, delay=2):

@@ -1,5 +1,5 @@
 /**
- * register.js – Registration page logic (pure HTML/JS, no server)
+ * register.js – Registration page logic with Auto-Login to Home
  */
 document.addEventListener('DOMContentLoaded', () => {
   const { showAlert, hideAlert, setFieldState, setLoading, registerUser, saveSession, getSession } = window.AuthLib;
@@ -85,18 +85,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!valid) return;
 
+    // تشغيل أنيميشن التحميل
     setLoading(submitBtn, loaderEl, true);
-    setTimeout(() => {
-      const result = registerUser({ firstname, lastname, email, phone, password });
+
+    // تجهيز بيانات الطلب متوافقة مع الـ Backend Schema المتفق عليها
+    const requestData = {
+      first_name: firstname,
+      last_name: lastname,
+      email: email,
+      phone: phone || null,
+      password: password,
+      role: 'customer' // الافتراضي للحسابات الجديدة
+    };
+
+    // 1️⃣ ضرب الـ API الخاص بالتسجيل
+    fetch('http://localhost:5000/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    })
+    .then(response => response.json().then(data => ({ status: response.status, data })))
+    .then(({ status, data }) => {
+      if (status === 201) {
+        showAlert(alertEl, `✓ Registration successful! Logging in automatically…`, 'success');
+
+        // 2️⃣ الـ Auto-Login: إرسال طلب تسجيل دخول تلقائي فوراً بنفس البيانات
+        return fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email: email, password: password })
+        })
+        .then(loginRes => loginRes.json().then(loginData => ({ loginStatus: loginRes.status, loginData })));
+      } else {
+        // إذا فشل التسجيل من البداية
+        setLoading(submitBtn, loaderEl, false);
+        showAlert(alertEl, data.error || 'Registration failed.', 'error');
+        return null;
+      }
+    })
+    .then(resResult => {
+      // لو الـ Register فشل فوق بنوقف هنا
+      if (!resResult) return; 
+
+      const { loginStatus, loginData } = resResult;
       setLoading(submitBtn, loaderEl, false);
 
-      if (result.success) {
-        saveSession(result.user, false);
-        showAlert(alertEl, `✓ ${result.message} Redirecting…`, 'success');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+      if (loginStatus === 200 && loginData.token) {
+        // 1️⃣ حفظ التوكن بشكل مستقل
+        localStorage.setItem('token', loginData.token);
+
+        // 2️⃣ تجهيز كائن البيانات الصافي
+        const userData = {
+          id: (loginData.user && loginData.user.id) || 3,
+          firstname: firstname,
+          first_name: firstname,
+          lastname: lastname,
+          last_name: lastname,
+          email: email,
+          role: 'customer'
+        };
+
+        // 3️⃣ الحفظ المباشر الإجباري جوه الـ LocalStorage والـ SessionStorage من غير دالة خارجية 
+        localStorage.setItem('aboss_session', JSON.stringify(userData));
+        sessionStorage.setItem('aboss_session', JSON.stringify(userData));
+        
+        // حفظ الكارت الافتراضي لليوزر
+        const userCart = localStorage.getItem('aboss_cart_' + userData.id) || '[]';
+        localStorage.setItem('aboss_cart', userCart);
+
+        // 4️⃣ التوجيه لصفحة الهوم
+        setTimeout(() => { 
+          window.location.href = 'index.html'; 
+        }, 1000);
       } else {
-        showAlert(alertEl, result.message, 'error');
+        window.location.href = 'login.html';
       }
-    }, 500);
+    })
+    .catch(error => {
+      setLoading(submitBtn, loaderEl, false);
+      console.error('Error during registration/login:', error);
+      showAlert(alertEl, '⚠️ Unable to connect to the server. Please ensure Docker containers are running.', 'error');
+    });
   });
 });
