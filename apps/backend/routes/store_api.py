@@ -19,9 +19,9 @@ store_bp = Blueprint('store', __name__)
 PAYMOB_BASE_URL = 'https://accept.paymob.com/api'
 
 PRODUCT_SELECT_COLUMNS = '''
-    id, name, category, description, sizes, colors, color_names,
-    in_stock, is_new, featured, price, old_price, image, images,
-    badge, badge_text, rating, reviews, stock, category_id, image_url,
+    id, name, category, price, old_price, image, images,
+    badge, badge_text, rating, reviews, description,
+    sizes, colors, color_names, in_stock, is_new, featured,
     created_at
 '''
 

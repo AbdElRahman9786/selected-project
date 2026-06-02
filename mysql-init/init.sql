@@ -1,4 +1,3 @@
-
 CREATE DATABASE IF NOT EXISTS shop_db;
 USE shop_db;
 
@@ -51,34 +50,38 @@ CREATE TABLE IF NOT EXISTS cart_items (
 
 -- ─── ORDERS ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS orders (
-    id          INT PRIMARY KEY AUTO_INCREMENT,
-    user_id     INT          DEFAULT NULL,
-    session_id  VARCHAR(100) DEFAULT NULL,
-    first_name  VARCHAR(50)  NOT NULL,
-    last_name   VARCHAR(50)  NOT NULL,
-    address     TEXT         NOT NULL,
-    phone       VARCHAR(20)  NOT NULL,
-    subtotal    DECIMAL(10,2) NOT NULL,
-    shipping    DECIMAL(10,2) NOT NULL,
-    tax         DECIMAL(10,2) NOT NULL,
-    total       DECIMAL(10,2) NOT NULL,
-    coupon_code VARCHAR(50)  DEFAULT NULL,
-    discount    DECIMAL(10,2) DEFAULT 0,
-    status      ENUM('pending','processing','shipped','delivered','cancelled') DEFAULT 'pending',
-    created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    id               INT PRIMARY KEY AUTO_INCREMENT,
+    user_id          INT           DEFAULT NULL,
+    session_id       VARCHAR(100)  DEFAULT NULL,
+    first_name       VARCHAR(50)   NOT NULL,
+    last_name        VARCHAR(50)   NOT NULL,
+    address          TEXT          NOT NULL,
+    shipping_address VARCHAR(500)  DEFAULT NULL,
+    city             VARCHAR(100)  DEFAULT NULL,
+    phone            VARCHAR(20)   NOT NULL,
+    subtotal         DECIMAL(10,2) NOT NULL,
+    shipping         DECIMAL(10,2) NOT NULL,
+    tax              DECIMAL(10,2) NOT NULL,
+    total            DECIMAL(10,2) NOT NULL,
+    total_amount     DECIMAL(10,2) DEFAULT NULL,
+    coupon_code      VARCHAR(50)   DEFAULT NULL,
+    discount         DECIMAL(10,2) DEFAULT 0,
+    status           ENUM('pending','processing','shipped','delivered','cancelled') DEFAULT 'pending',
+    created_at       TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- ─── ORDER ITEMS ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS order_items (
-    id           INT PRIMARY KEY AUTO_INCREMENT,
-    order_id     INT NOT NULL,
-    product_id   INT NOT NULL,
-    product_name VARCHAR(255)  NOT NULL,
-    quantity     INT           NOT NULL,
-    price        DECIMAL(10,2) NOT NULL,
-    size         VARCHAR(20)   DEFAULT NULL,
-    color        VARCHAR(30)   DEFAULT NULL,
+    id                INT PRIMARY KEY AUTO_INCREMENT,
+    order_id          INT NOT NULL,
+    product_id        INT NOT NULL,
+    product_name      VARCHAR(255)  NOT NULL,
+    quantity          INT           NOT NULL,
+    price             DECIMAL(10,2) NOT NULL,
+    price_at_purchase DECIMAL(10,2) DEFAULT NULL,
+    size              VARCHAR(20)   DEFAULT NULL,
+    color             VARCHAR(30)   DEFAULT NULL,
     FOREIGN KEY (order_id)   REFERENCES orders(id)   ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
 );
