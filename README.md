@@ -19,6 +19,16 @@ Once the containers are built and started, you can access the applications in yo
 
 To use host port 8080 for the user frontend instead, set `USER_FRONTEND_PORT=8080` in `.env` or your shell before `docker compose up`.
 
+Paymob checkout is configured through these `.env` values:
+
+* `PAYMOB_API_KEY`
+* `PAYMOB_INTEGRATION_ID`
+* `PAYMOB_IFRAME_ID`
+* `PAYMOB_REDIRECT_URL`
+* `PAYMOB_CURRENCY`
+
+When the user places an order, the backend creates the order first, then sends the browser to Paymob. After payment, Paymob returns the user to the redirect page inside this site.
+
 To shut down the containers, run:
 ```bash
 docker-compose down

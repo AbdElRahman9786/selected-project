@@ -141,7 +141,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstName = document.getElementById('billing-fname').value.trim();
         const lastName  = document.getElementById('billing-lname').value.trim();
         const address   = document.getElementById('billing-address').value.trim();
+        const city      = document.getElementById('billing-city').value.trim();
+        const email     = document.getElementById('billing-email').value.trim();
         const phone     = document.getElementById('billing-phone').value.trim();
+
+        if (!firstName || !lastName || !address || !city || !email || !phone) {
+            alert('Please fill in all billing details before placing the order.');
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
 
         if (phone.length < 11) {
             alert("Please enter a valid 11-digit phone number.");
@@ -156,10 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         
         const payload = {
+            user_id: session?.id ?? session?.user_id ?? session?.userId ?? null,
             session_id: localStorage.getItem('aboss_session_id') || ('guest_' + Date.now()),
             first_name: firstName,
             last_name:  lastName,
             address,
+            city,
+            email,
             phone,
             subtotal: parseFloat(sub.toFixed(2)),
             shipping: parseFloat(shipping.toFixed(2)),
@@ -184,23 +199,66 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (!res.ok) {
-                alert('Error: ' + (data.error || 'Something went wrong'));
+                alert('Order error: ' + (data.error || 'Something went wrong'));
                 return;
             }
 
-           
-            const modal = document.getElementById('order-success-modal');
-            if (modal) {
-                document.getElementById('res-name').innerText    = firstName + " " + lastName;
-                document.getElementById('res-address').innerText = address;
-                document.getElementById('res-phone').innerText   = phone;
-                document.getElementById('res-total').innerText   = "$" + total.toFixed(2);
-                modal.style.display = 'flex';
-                localStorage.removeItem('aboss_cart');
+            const orderId = data.order_id;
+
+            // Show a loading indicator while setting up payment
+            const btn = checkoutForm.querySelector('.checkout-btn') ||
+                        document.querySelector('[type="submit"]');
+            if (btn) {
+                btn.disabled    = true;
+                btn.textContent = 'Redirecting to payment...';
             }
 
+            const paymobRes = await fetch('http://localhost:5000/api/paymob/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    order_id: orderId,
+                    email,
+                    city,
+                })
+            });
+            const paymobData = await paymobRes.json();
+
+            console.log('[Paymob] session response:', paymobData);
+
+            if (!paymobRes.ok) {
+                const detail = paymobData.detail
+                    ? JSON.stringify(paymobData.detail)
+                    : '';
+                alert(
+                    'Payment setup error: ' +
+                    (paymobData.error || 'Please try again') +
+                    (detail ? '\n\nDetail: ' + detail : '')
+                );
+                if (btn) {
+                    btn.disabled    = false;
+                    btn.innerHTML   = 'PLACE ORDER <span class="checkout-btn-icon">→</span>';
+                }
+                return;
+            }
+
+            if (!paymobData.payment_url) {
+                console.error('[Paymob] No payment_url in response:', paymobData);
+                alert('Payment error: No redirect URL returned. Please contact support.');
+                if (btn) {
+                    btn.disabled    = false;
+                    btn.innerHTML   = 'PLACE ORDER <span class="checkout-btn-icon">→</span>';
+                }
+                return;
+            }
+
+            // Clear cart and redirect to Paymob
+            localStorage.removeItem('aboss_cart');
+            window.location.href = paymobData.payment_url;
+
         } catch (err) {
-            alert('Network error. Please try again.');
+            console.error('[Checkout] Network error:', err);
+            alert('Network error: ' + err.message + '\nPlease check your connection and try again.');
         }
     });
 

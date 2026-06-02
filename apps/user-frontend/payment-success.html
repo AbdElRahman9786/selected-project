@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aboss – Order Confirmed</title>
+  <meta name="description" content="Your Aboss order has been placed successfully." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:        #111111;
+      --white:        #ffffff;
+      --gray-bg:      #f2f2f2;
+      --gray-light:   #e4e4e4;
+      --green:        #7bc040;
+      --green-dark:   #69a835;
+      --green-light:  rgba(123,192,64,0.12);
+      --red:          #e53935;
+      --red-light:    rgba(229,57,53,0.10);
+      --font-heading: 'Barlow Condensed', sans-serif;
+      --font-body:    'Inter', sans-serif;
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--black);
+      background: var(--gray-bg);
+      overflow-x: hidden;
+    }
+
+    /* ─── ANIMATED BACKGROUND ─────────────────────────────────── */
+    .bg-scene {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .bg-scene::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #f8fdf4 0%, #eef5e8 40%, #f4f4f4 100%);
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      animation: blobFloat 8s ease-in-out infinite alternate;
+    }
+    .blob-1 { width: 500px; height: 500px; background: rgba(123,192,64,0.25); top: -120px; left: -100px; animation-delay: 0s; }
+    .blob-2 { width: 350px; height: 350px; background: rgba(123,192,64,0.18); bottom: -80px; right: -60px; animation-delay: 3s; }
+    .blob-3 { width: 250px; height: 250px; background: rgba(17,17,17,0.07); top: 50%; left: 55%; animation-delay: 1.5s; }
+    @keyframes blobFloat {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    /* ─── LAYOUT ──────────────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    /* ─── LOGO ────────────────────────────────────────────────── */
+    .site-logo {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 36px;
+      background: rgba(242,242,242,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      z-index: 10;
+    }
+    .site-logo a {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--black);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .site-logo a span { color: var(--green); }
+
+    /* ─── CARD ────────────────────────────────────────────────── */
+    .card {
+      margin-top: 64px;
+      width: min(640px, 100%);
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 28px;
+      box-shadow: 0 32px 100px rgba(0,0,0,0.12);
+      padding: 48px 44px 44px;
+      text-align: center;
+      animation: cardPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes cardPop {
+      from { transform: scale(0.88) translateY(40px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    /* ─── SUCCESS ICON ────────────────────────────────────────── */
+    .icon-ring {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .icon-ring.success {
+      background: var(--green-light);
+      border: 2px solid rgba(123,192,64,0.35);
+    }
+    .icon-ring.failure {
+      background: var(--red-light);
+      border: 2px solid rgba(229,57,53,0.25);
+    }
+
+    /* Checkmark SVG animation */
+    .check-svg { width: 42px; height: 42px; }
+    .check-circle {
+      stroke-dasharray: 166;
+      stroke-dashoffset: 166;
+      animation: strokeDraw 0.6s 0.2s cubic-bezier(0.65,0,0.45,1) forwards;
+    }
+    .check-tick {
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+      animation: strokeDraw 0.4s 0.7s cubic-bezier(0.65,0,0.45,1) forwards;
+    }
+    @keyframes strokeDraw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* X icon for failure */
+    .x-svg { width: 36px; height: 36px; }
+
+    /* ─── BADGE ───────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .badge.success { background: var(--green-light); color: var(--green-dark); }
+    .badge.failure { background: var(--red-light); color: var(--red); }
+
+    /* ─── HEADING ─────────────────────────────────────────────── */
+    .title {
+      font-family: var(--font-heading);
+      font-size: clamp(48px, 9vw, 80px);
+      font-weight: 900;
+      line-height: 0.9;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: rgba(17,17,17,0.6);
+      line-height: 1.65;
+      max-width: 46ch;
+      margin: 0 auto 28px;
+    }
+
+    /* ─── ORDER DETAILS ───────────────────────────────────────── */
+    .order-box {
+      background: var(--gray-bg);
+      border: 1px solid var(--gray-light);
+      border-radius: 16px;
+      padding: 22px 24px;
+      text-align: left;
+      margin-bottom: 28px;
+    }
+    .order-box-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(17,17,17,0.45);
+      margin-bottom: 16px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      font-size: 14px;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: rgba(17,17,17,0.55); }
+    .detail-value { font-weight: 600; color: var(--black); }
+    .detail-value.total {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--green-dark);
+    }
+    .detail-value.order-num {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+
+    /* ─── ITEMS LIST ──────────────────────────────────────────── */
+    .items-section {
+      background: var(--gray-bg);
+      border: 1px solid var(--gray-light);
+      border-radius: 16px;
+      padding: 0 24px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+    .items-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 0 12px;
+      border-bottom: 1px solid var(--gray-light);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(17,17,17,0.45);
+      cursor: pointer;
+      user-select: none;
+    }
+    .items-header .toggle-icon { transition: transform 0.3s; }
+    .items-list {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.4s ease;
+    }
+    .items-list.open { max-height: 500px; }
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      font-size: 14px;
+    }
+    .order-item:last-child { border-bottom: none; }
+    .item-name { font-weight: 500; }
+    .item-qty  { color: rgba(17,17,17,0.45); font-size: 12px; margin-top: 2px; }
+    .item-price { font-weight: 700; }
+
+    /* ─── ACTIONS ─────────────────────────────────────────────── */
+    .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 180px;
+      height: 52px;
+      padding: 0 24px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn.primary {
+      background: var(--green);
+      color: var(--white);
+      box-shadow: 0 8px 24px rgba(123,192,64,0.35);
+    }
+    .btn.primary:hover { background: var(--green-dark); box-shadow: 0 12px 32px rgba(123,192,64,0.45); }
+    .btn.secondary {
+      background: var(--black);
+      color: var(--white);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .btn.secondary:hover { background: #2a2a2a; }
+    .btn.outline {
+      background: transparent;
+      color: var(--black);
+      border: 2px solid rgba(0,0,0,0.18);
+    }
+    .btn.outline:hover { border-color: var(--black); background: rgba(0,0,0,0.04); }
+
+    /* ─── META ────────────────────────────────────────────────── */
+    .meta {
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(17,17,17,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .countdown { font-weight: 700; color: var(--green-dark); }
+
+    /* ─── LOADING STATE ───────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, #e8e8e8 25%, #f4f4f4 50%, #e8e8e8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+
+    /* ─── CONFETTI ────────────────────────────────────────────── */
+    .confetti-wrap {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      top: -12px;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ─── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 520px) {
+      .card { padding: 36px 24px 32px; border-radius: 20px; }
+      .actions { flex-direction: column; align-items: stretch; }
+      .btn { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-scene">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Confetti container (success only) -->
+  <div class="confetti-wrap" id="confetti-wrap" aria-hidden="true"></div>
+
+  <!-- Top logo bar -->
+  <header class="site-logo">
+    <a href="index.html">aboss<span>.</span></a>
+  </header>
+
+  <!-- Main page -->
+  <main class="page">
+    <div class="card" id="result-card">
+
+      <!-- Icon -->
+      <div class="icon-ring success" id="icon-ring">
+        <!-- Animated checkmark (hidden for failure) -->
+        <svg class="check-svg" id="check-svg" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-circle" cx="26" cy="26" r="25" stroke="#7bc040" stroke-width="2" fill="none"/>
+          <polyline class="check-tick" points="14,27 22,35 38,18" stroke="#7bc040" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <!-- X icon (shown for failure) -->
+        <svg class="x-svg" id="x-svg" viewBox="0 0 36 36" fill="none" style="display:none">
+          <circle cx="18" cy="18" r="17" stroke="#e53935" stroke-width="2"/>
+          <line x1="12" y1="12" x2="24" y2="24" stroke="#e53935" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="24" y1="12" x2="12" y2="24" stroke="#e53935" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Badge -->
+      <div class="badge success" id="status-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+        Payment Confirmed
+      </div>
+
+      <!-- Heading -->
+      <h1 class="title" id="page-title">Order<br>Confirmed!</h1>
+      <p class="subtitle" id="page-subtitle">
+        Thank you for shopping with <strong>Aboss</strong>. Your order has been received and is being prepared.
+      </p>
+
+      <!-- Order details box -->
+      <div class="order-box" id="order-box">
+        <div class="order-box-title">Order Details</div>
+
+        <div class="detail-row">
+          <span class="detail-label">Order #</span>
+          <span class="detail-value order-num" id="res-order-id">
+            <span class="skeleton" style="width:80px;height:20px;">&nbsp;</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Customer</span>
+          <span class="detail-value" id="res-name">
+            <span class="skeleton" style="width:120px;height:16px;">&nbsp;</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Phone</span>
+          <span class="detail-value" id="res-phone">
+            <span class="skeleton" style="width:100px;height:16px;">&nbsp;</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Address</span>
+          <span class="detail-value" id="res-address">
+            <span class="skeleton" style="width:150px;height:16px;">&nbsp;</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Total Paid</span>
+          <span class="detail-value total" id="res-total">
+            <span class="skeleton" style="width:70px;height:22px;">&nbsp;</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Items accordion (loaded dynamically) -->
+      <div class="items-section" id="items-section" style="display:none">
+        <div class="items-header" id="items-toggle" role="button" tabindex="0" aria-expanded="false">
+          <span id="items-toggle-label">Items in your order</span>
+          <svg class="toggle-icon" id="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="items-list" id="items-list"></div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="actions">
+        <a href="index.html" class="btn primary" id="btn-home">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Back to Home
+        </a>
+        <a href="product-listing.html" class="btn secondary" id="btn-shop">
+          Continue Shopping
+        </a>
+      </div>
+
+      <!-- Countdown -->
+      <p class="meta" id="meta-text">
+        Redirecting to home in <span class="countdown" id="countdown">8</span>s
+      </p>
+    </div>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ── 1. Read URL params from Paymob redirect ───────────────── */
+    const params   = new URLSearchParams(window.location.search);
+
+    // Paymob sends: success=true/false, order=<paymob_order_id>, id=<transaction_id>
+    // We also pass: order_id=<our order_id> (via redirect_url we constructed)
+    const success      = params.get('success');           // 'true' or 'false'
+    const orderId      = params.get('order_id') || params.get('id') || null;
+    const txnId        = params.get('id')        || null;
+    const isSuccess    = success !== 'false';             // treat missing as success (legacy iframe callback)
+
+    /* ── 2. Clear cart ─────────────────────────────────────────── */
+    localStorage.removeItem('aboss_cart');
+    localStorage.removeItem('aboss_cart_id');
+
+    /* ── 3. If payment explicitly failed, switch UI ────────────── */
+    if (success === 'false') {
+      showFailure();
+    } else {
+      launchConfetti();
+    }
+
+    /* ── 4. Fetch order details from backend ───────────────────── */
+    if (orderId && isSuccess) {
+      fetchOrder(orderId);
+    } else {
+      // No order ID – just show generic success
+      document.getElementById('res-order-id').textContent = orderId ? '#' + orderId : 'N/A';
+      document.getElementById('res-name').textContent    = '—';
+      document.getElementById('res-phone').textContent   = '—';
+      document.getElementById('res-address').textContent = '—';
+      document.getElementById('res-total').textContent   = '—';
+    }
+
+    /* ── 5. Countdown redirect ─────────────────────────────────── */
+    let seconds = 8;
+    const countEl = document.getElementById('countdown');
+    const tick = setInterval(() => {
+      seconds--;
+      if (countEl) countEl.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(tick);
+        window.location.href = 'index.html';
+      }
+    }, 1000);
+
+    /* ── 6. Items accordion toggle ─────────────────────────────── */
+    const toggle   = document.getElementById('items-toggle');
+    const itemList = document.getElementById('items-list');
+    const toggleIc = document.getElementById('toggle-icon');
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const open = itemList.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open);
+        toggleIc.style.transform = open ? 'rotate(180deg)' : '';
+      });
+      toggle.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle.click(); }
+      });
+    }
+
+    /* ─────────────────────────────────────────────────────────── */
+
+    async function fetchOrder(id) {
+      try {
+        const res  = await fetch(`http://localhost:5000/api/orders/${id}`);
+        if (!res.ok) throw new Error('not found');
+        const data = await res.json();
+        populateOrder(data);
+      } catch {
+        // Backend may not have a single-order endpoint yet — show what we know
+        document.getElementById('res-order-id').textContent = '#' + id;
+        ['res-name','res-phone','res-address'].forEach(i => {
+          const el = document.getElementById(i);
+          if (el) el.textContent = '—';
+        });
+        document.getElementById('res-total').textContent = '—';
+      }
+    }
+
+    function populateOrder(data) {
+      const order = data.order || data; // handle {order: {...}} or flat
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val || '—';
+      };
+
+      set('res-order-id', '#' + (order.id || order.order_id || ''));
+      set('res-name',     (order.first_name || '') + ' ' + (order.last_name || ''));
+      set('res-phone',    order.phone || '');
+      set('res-address',  (order.address || order.shipping_address || '') + (order.city ? ', ' + order.city : ''));
+      set('res-total',    'EGP ' + (parseFloat(order.total || order.total_amount || 0)).toFixed(2));
+
+      // Items
+      const items = order.items || order.order_items || [];
+      const section = document.getElementById('items-section');
+      const list    = document.getElementById('items-list');
+      if (items.length && section && list) {
+        list.innerHTML = items.map(item => `
+          <div class="order-item">
+            <div>
+              <div class="item-name">${escHtml(item.name || item.product_name || '')}</div>
+              <div class="item-qty">Qty: ${item.qty || item.quantity || 1}${item.size ? ' · Size: ' + item.size : ''}${item.color ? ' · Color: ' + item.color : ''}</div>
+            </div>
+            <div class="item-price">EGP ${(parseFloat(item.price || item.price_at_purchase || 0) * (item.qty || item.quantity || 1)).toFixed(2)}</div>
+          </div>
+        `).join('');
+
+        const label = document.getElementById('items-toggle-label');
+        if (label) label.textContent = `${items.length} item${items.length !== 1 ? 's' : ''} in your order`;
+        section.style.display = '';
+      }
+    }
+
+    function showFailure() {
+      // Swap icon
+      document.getElementById('icon-ring').className    = 'icon-ring failure';
+      document.getElementById('check-svg').style.display = 'none';
+      document.getElementById('x-svg').style.display    = '';
+
+      // Swap badge
+      const badge = document.getElementById('status-badge');
+      badge.className   = 'badge failure';
+      badge.innerHTML   = `<svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg> Payment Failed`;
+
+      // Swap text
+      document.getElementById('page-title').textContent    = 'Payment\nFailed';
+      document.getElementById('page-subtitle').textContent = 'Your payment could not be processed. No charge was made. Please try again or use a different payment method.';
+
+      // Replace body background
+      document.querySelector('.bg-scene').style.background = 'none';
+      document.body.style.background = 'linear-gradient(135deg, #fff4f4 0%, #fdeaea 100%)';
+
+      // Blobs to red tint
+      document.querySelectorAll('.blob').forEach(b => {
+        b.style.background = 'rgba(229,57,53,0.15)';
+      });
+
+      // Hide order box & items
+      document.getElementById('order-box').style.display    = 'none';
+      document.getElementById('items-section').style.display = 'none';
+
+      // Replace actions
+      document.querySelector('.actions').innerHTML = `
+        <a href="checkout.html" class="btn primary">Try Again</a>
+        <a href="index.html"    class="btn secondary">Back to Home</a>
+      `;
+
+      // Hide countdown
+      document.getElementById('meta-text').style.display = 'none';
+    }
+
+    function launchConfetti() {
+      const wrap   = document.getElementById('confetti-wrap');
+      const colors = ['#7bc040','#69a835','#111111','#f5d020','#ffffff','#a8e063'];
+      const count  = 90;
+
+      for (let i = 0; i < count; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.cssText = [
+          `left: ${Math.random() * 100}%`,
+          `background: ${colors[Math.floor(Math.random() * colors.length)]}`,
+          `width: ${6 + Math.random() * 8}px`,
+          `height: ${6 + Math.random() * 8}px`,
+          `border-radius: ${Math.random() > 0.5 ? '50%' : '2px'}`,
+          `animation-duration: ${2.5 + Math.random() * 2.5}s`,
+          `animation-delay: ${Math.random() * 1.2}s`,
+        ].join(';');
+        wrap.appendChild(piece);
+      }
+
+      // Remove confetti after animation
+      setTimeout(() => { wrap.innerHTML = ''; }, 6000);
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+  })();
+  </script>
+</body>
+</html>
