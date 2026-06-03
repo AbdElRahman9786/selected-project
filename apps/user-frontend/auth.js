@@ -226,30 +226,23 @@ window.AuthLib = {
   exportUsersJSON
 };
 
-/* ─────────────────────────────────────────────────────────
-   تحدي الـ Navbar بالاسم الصحيح ومنع الـ undefined نهائياً
-───────────────────────────────────────────────────────── */
 function fixNavbarName() {
-  // بنجيب بيانات المستخدم من المكان اللي register.js حفظها فيه
+  
   const sessionUser = window.AuthLib.getSession();
   
-  // بنمسك عنصر الـ لينك اللي مكتوب جواه undefined بناءً على الـ HTML بتاعي
   const navUserLink = document.querySelector('.nav-right a');
   
   if (navUserLink) {
     if (sessionUser) {
-      // لو اليوزر مسجل دخول، اعرض اسمه الأول فوراً
+   
       const nameToShow = sessionUser.first_name || sessionUser.firstname || 'User';
       navUserLink.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${nameToShow}`;
     } else {
-      // لو مش مسجل دخول، يرجع الكلمة لـ Login بدل ما تفضل متعلقة على undefined
+      
       navUserLink.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Login`;
     }
   }
 }
 
-// تشغيل الدالة فوراً أول ما الـ DOM يجهز
 document.addEventListener('DOMContentLoaded', fixNavbarName);
-
-// تشغيل احتياطي سريع بعد تحميل الصفحة للتأكد إن مفيش ملف تاني غطى عليه
 window.addEventListener('load', fixNavbarName);
