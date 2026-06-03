@@ -9,10 +9,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from config import JWT_ALGORITHM, JWT_EXPIRATION_HOURS, JWT_SECRET_KEY
 from db import dict_cursor, get_db_connection
 
-# إعداد الـ Logger لعرض الـ Logs في ترمينال Docker
 logger = logging.getLogger(__name__)
 
-# إنشاء Blueprint للـ Auth
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 def hash_password(password):
@@ -113,7 +111,7 @@ def register():
     email = data.get('email')
     password = data.get('password')
     phone = data.get('phone')
-    role = data.get('role', 'customer')  # الافتراضي customer لو متبعتش
+    role = data.get('role', 'customer') 
 
     if not all([first_name, last_name, email, password]):
         return jsonify({'error': 'Missing required fields'}), 400
@@ -124,13 +122,13 @@ def register():
     conn = get_db_connection()
     cursor = dict_cursor(conn)
     try:
-        # التأكد إن الإيميل مش متكرر
+        
         cursor.execute('SELECT id FROM users WHERE email = %s', (email,))
         if cursor.fetchone():
-            logger.warning(f"❌ Register failed: Email {email} already exists.")
+            logger.warning(f" Register failed: Email {email} already exists.")
             return jsonify({'error': 'Email already registered'}), 400
 
-        # تشفير الباسورد وحفظ اليوزر
+    
         pw_hash = hash_password(password)
         cursor.execute(
             '''INSERT INTO users (first_name, last_name, email, password_hash, phone, role) 
@@ -139,11 +137,11 @@ def register():
         )
         conn.commit()
         
-        logger.info(f"✨ [REGISTER SUCCESS] New user registered: {email} as {role}")
+        logger.info(f" [REGISTER SUCCESS] New user registered: {email} as {role}")
         return jsonify({'message': 'User registered successfully!'}), 201
 
     except Exception as e:
-        logger.error(f"💥 Database error during registration: {str(e)}")
+        logger.error(f" Database error during registration: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     finally:
         cursor.close()
@@ -166,13 +164,12 @@ def login():
         user = cursor.fetchone()
 
         if not user or not verify_password(user['password_hash'], password):
-            logger.warning(f"⚠️ [LOGIN FAILED] Invalid login attempt for email: {email}")
+            logger.warning(f" [LOGIN FAILED] Invalid login attempt for email: {email}")
             return jsonify({'error': 'Invalid email or password'}), 401
 
-        # توليد التوكن
         token = create_access_token(user)
 
-        logger.info(f"🔑 [LOGIN SUCCESS] User {email} logged in successfully. Role: {user['role']}")
+        logger.info(f" [LOGIN SUCCESS] User {email} logged in successfully. Role: {user['role']}")
         return jsonify({
             'message': 'Login successful',
             'token': token,
@@ -196,8 +193,7 @@ def login():
 @auth_bp.route('/logout', methods=['POST'])
 @token_required
 def logout():
-    # بما إننا بنستخدم JWT، الـ Logout الأساسي بيحصل في الفرونت إند بمسح التوكن.
-    # لكن بنسجل الأكشن هنا في الـ Terminal عشان نتابع خروج اليوزر.
+    
     user_email = g.current_user.get('email')
     logger.info(f"🚪 [LOGOUT] User {user_email} requested logout (Token validated).")
     return jsonify({'message': 'Logged out successfully (Clear token from client)'}), 200
