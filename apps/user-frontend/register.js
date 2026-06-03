@@ -85,20 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!valid) return;
 
-    // تشغيل أنيميشن التحميل
     setLoading(submitBtn, loaderEl, true);
 
-    // تجهيز بيانات الطلب متوافقة مع الـ Backend Schema المتفق عليها
     const requestData = {
       first_name: firstname,
       last_name: lastname,
       email: email,
       phone: phone || null,
       password: password,
-      role: 'customer' // الافتراضي للحسابات الجديدة
+      role: 'customer' 
     };
 
-    // 1️⃣ ضرب الـ API الخاص بالتسجيل
+    
     fetch('http://localhost:5000/api/auth/register', {
       method: 'POST',
       headers: {
@@ -111,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (status === 201) {
         showAlert(alertEl, `✓ Registration successful! Logging in automatically…`, 'success');
 
-        // 2️⃣ الـ Auto-Login: إرسال طلب تسجيل دخول تلقائي فوراً بنفس البيانات
         return fetch('http://localhost:5000/api/auth/login', {
           method: 'POST',
           headers: {
@@ -121,24 +118,23 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(loginRes => loginRes.json().then(loginData => ({ loginStatus: loginRes.status, loginData })));
       } else {
-        // إذا فشل التسجيل من البداية
+      
         setLoading(submitBtn, loaderEl, false);
         showAlert(alertEl, data.error || 'Registration failed.', 'error');
         return null;
       }
     })
     .then(resResult => {
-      // لو الـ Register فشل فوق بنوقف هنا
       if (!resResult) return; 
 
       const { loginStatus, loginData } = resResult;
       setLoading(submitBtn, loaderEl, false);
 
       if (loginStatus === 200 && loginData.token) {
-        // 1️⃣ حفظ التوكن بشكل مستقل
+        
         localStorage.setItem('token', loginData.token);
 
-        // 2️⃣ تجهيز كائن البيانات الصافي
+        
         const userData = {
           id: (loginData.user && loginData.user.id) || 3,
           firstname: firstname,
@@ -149,15 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
           role: 'customer'
         };
 
-        // 3️⃣ الحفظ المباشر الإجباري جوه الـ LocalStorage والـ SessionStorage من غير دالة خارجية 
+        
         localStorage.setItem('aboss_session', JSON.stringify(userData));
         sessionStorage.setItem('aboss_session', JSON.stringify(userData));
         
-        // حفظ الكارت الافتراضي لليوزر
+        
         const userCart = localStorage.getItem('aboss_cart_' + userData.id) || '[]';
         localStorage.setItem('aboss_cart', userCart);
 
-        // 4️⃣ التوجيه لصفحة الهوم
+       
         setTimeout(() => { 
           window.location.href = 'index.html'; 
         }, 1000);
