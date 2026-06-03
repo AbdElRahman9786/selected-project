@@ -47,10 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!valid) return;
 
-    // تشغيل الأنيميشن الخاص بالتحميل
+    
     setLoading(submitBtn, loaderEl, true);
 
-    // ضرب الـ API الحقيقي في الباك إند
     fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: {
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (status === 200) {
   localStorage.setItem('aboss_token', data.token);
 
-  // فك الـ JWT وجيب البيانات منه مباشرةً
   let tokenPayload = {};
   try {
     tokenPayload = JSON.parse(atob(data.token.split('.')[1]));
@@ -85,24 +83,19 @@ document.addEventListener('DOMContentLoaded', () => {
   sessionStorage.setItem('aboss_session', JSON.stringify(sessionUser));
   localStorage.setItem('token', data.token);
 
-        // ربط السلة الخاصة بالمستخدم الحالي
         const userCart = localStorage.getItem('aboss_cart_' + data.user.id) || '[]';
         localStorage.setItem('aboss_cart', userCart);
 
         showAlert(alertEl, `✓ ${data.message} Redirecting…`, 'success');
 
-        // التوجيه بناءً على صلاحية المستخدم (Admin أو Customer)
         setTimeout(() => {
           if (data.user.role === 'admin') {
-            // توجيه الآدمن إلى الفرونت إند الخاص به (البورت 8081 حسب الـ README)
             window.location.href = 'http://localhost:8081'; 
           } else {
-            // توجيه المستخدم العادي إلى الصفحة الرئيسية للمتجر
             window.location.href = 'index.html';
           }
         }, 1100);
       } else {
-        // عرض الخطأ الراجع من السيرفر (مثلاً: إيميل أو باسوورد خطأ)
         showAlert(alertEl, data.error || 'Invalid email or password.', 'error');
         emailIn.classList.add('invalid');
         passwordIn.classList.add('invalid');
@@ -111,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => {
       setLoading(submitBtn, loaderEl, false);
       console.error('Error during login:', error);
-      showAlert(alertEl, '⚠️ Unable to connect to the server. Please ensure Docker containers are running.', 'error');
+      showAlert(alertEl, ' Unable to connect to the server. Please ensure Docker containers are running.', 'error');
     });
   });
   
